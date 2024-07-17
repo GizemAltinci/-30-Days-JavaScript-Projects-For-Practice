@@ -65,6 +65,10 @@ function showQuestion() {
     button.innerHTML = answer.text;
     button.classList.add("btn"); // Bu metod, button elementine "btn" adlı bir CSS sınıfı ekler. Bu sınıf, butonun stilini belirledik.
     answerButtons.appendChild(button);
+    if (answer.correct) {
+      button.dataset.correct = answer.correct;
+    }
+    button.addEventListener("click", selectAnswer);
   });
 }
 
@@ -76,5 +80,49 @@ function resetState() {
     //ilk elemanı kaldırıyorum.answerButtons içindeki tüm çocuk elemanlar (cevap butonları) kaldırılana kadar devam eder.
   }
 }
+
+// Tüm butonları dolaşarak doğru cevabı gösterir ve butonları devre dışı bırakır
+function selectAnswer(e) {
+  const selectBtn = e.target;
+  const isCorrect = selectBtn.dataset.correct === "true";
+  if (isCorrect) {
+    selectBtn.classList.add("correct");
+    score++;
+  } else {
+    selectBtn.classList.add("incorrect");
+  }
+  Array.from(answerButtons.children).forEach((button) => {
+    if (button.dataset.correct == "true") {
+      button.classList.add("correct"); //doğru cevabı işaretleyerek kullanıcıya gösterir. Yanlışı seçsen de.
+    }
+    button.disabled = true; //Bu işlem, butonu devre dışı bırakır, yani kullanıcı bu butona artık tıklayamaz.
+  });
+  nextButton.style.display = "block";
+}
+
+function showScore() {
+  resetState();
+  questionElement.innerHTML = `You scored ${score} out of ${questions.length}!`;
+  nextButton.innerHTML = "Play Again";
+  nextButton.style.display = "block";
+}
+
+function handleNextButton() {
+  currentQuestionIndex++;
+  if (currentQuestionIndex < questions.length) {
+    showQuestion();
+  } else {
+    showScore();
+  }
+}
+
+nextButton.addEventListener("click", () => {
+  if (currentQuestionIndex < questions.length) {
+    //Bu kontrol, mevcut sorunun dizideki son sorudan önce olup olmadığını belirler.
+    handleNextButton(); //daha yanıtlanacak sorular varsa), handleNextButton fonksiyonu çağrılır. bu fonks, bir sonraki soruya geçmek için gerekli işlemleri yapar.
+  } else {
+    startQuiz(); //Eğer currentQuestionIndex toplam soru sayısına eşit veya büyükse (yani tüm sorular yanıtlanmışsa), startQuiz fonksiyonu çağrılır
+  }
+});
 
 startQuiz();
